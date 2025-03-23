@@ -1,123 +1,101 @@
+import os
 import sys
-import gi
 import cv2
 import numpy as np
+import time
 
-gi.require_version('Gst', '1.0')
-from gi.repository import Gst, GLib
-
-# 전역 변수: 템플릿 및 ROI 선택과 관련된 변수들
-template_img = None     # 선택된 템플릿 이미지
-roi = None              # 선택된 ROI 좌표 (x, y, w, h)
-roi_selected = False    # ROI가 선택되었는지 여부
-drawing = False         # 드래그 중인지 여부
-ix, iy = -1, -1         # 시작점 좌표
-frame_for_selection = None  # 현재 프레임(ROI 선택용)
-
-def select_roi(event, x, y, flags, param):
-    """
-    OpenCV 마우스 콜백 함수: ROI(관심 영역)를 선택하기 위한 드래그 이벤트 처리.
-    """
-    global ix, iy, drawing, roi, roi_selected, template_img, frame_for_selection
-
-    if event == cv2.EVENT_LBUTTONDOWN:
-        drawing = True
-        ix, iy = x, y
-
-    elif event == cv2.EVENT_MOUSEMOVE:
-        if drawing and frame_for_selection is not None:
-            frame_copy = frame_for_selection.copy()
-            cv2.rectangle(frame_copy, (ix, iy), (x, y), (0, 255, 0), 2)
-            cv2.imshow("Frame", frame_copy)
-
-    elif event == cv2.EVENT_LBUTTONUP:
-        drawing = False
-        x1, y1 = min(ix, x), min(iy, y)
-        x2, y2 = max(ix, x), max(iy, y)
-        roi = (x1, y1, x2 - x1, y2 - y1)
-        roi_selected = True
-        if frame_for_selection is not None:
-            template_img = frame_for_selection[y1:y2, x1:x2]
-        print("ROI selected:", roi)
-
-def on_new_sample(sink):
-    """
-    GStreamer 앱싱크의 새로운 샘플 이벤트 콜백 함수.
-    프레임을 numpy 배열로 변환한 후, 템플릿이 선택되었다면 템플릿 매칭을 실행합니다.
-    """
-    global frame_for_selection, template_img
-
-    sample = sink.emit("pull-sample")
-    if sample:
-        buf = sample.get_buffer()
-        caps = sample.get_caps()
-
-        # 프레임의 가로, 세로 크기를 추출
-        structure = caps.get_structure(0)
-        width = structure.get_value('width')
-        height = structure.get_value('height')
-
-        # 버퍼 데이터를 numpy 배열로 변환
-        result, map_info = buf.map(Gst.MapFlags.READ)
-        if not result:
-            return Gst.FlowReturn.ERROR
-
-        frame = np.frombuffer(map_info.data, np.uint8)
-        frame = frame.reshape((height, width, 3))
-        buf.unmap(map_info)
-
-        # ROI 선택을 위해 현재 프레임을 저장(마우스 콜백에서 사용)
-        frame_for_selection = frame.copy()
-
-        # 템플릿 매칭: 템플릿이 설정되어 있다면 매 프레임에 대해 매칭 수행
-        if template_img is not None:
-            res = cv2.matchTemplate(frame, template_img, cv2.TM_CCOEFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            top_left = max_loc
-            h, w = template_img.shape[:2]
-            bottom_right = (top_left[0] + w, top_left[1] + h)
-            cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 2)
-
-        cv2.imshow("Frame", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            # 'q' 키를 누르면 GLib 메인루프 종료
-            GLib.MainLoop().quit()
-
-    return Gst.FlowReturn.OK
+# 전역 변수
+template_img = None
+frame_count = 0
 
 def main():
-    # GStreamer 초기화
-    Gst.init(None)
-
-    # OpenCV 창 생성 및 마우스 콜백 설정 (ROI 선택용)
-    cv2.namedWindow("Frame", cv2.WINDOW_AUTOSIZE)
-    cv2.setMouseCallback("Frame", select_roi)
-
-    # DeepStream/ GStreamer 파이프라인 구성
-    # 여기서 filesrc를 사용해 로컬 비디오 파일을 읽어오며, deepstream 플러그인(예: decodebin) 등을 활용합니다.
-    pipeline_str = (
-        "filesrc location=your_video.mp4 ! decodebin ! videoconvert ! "
-        "video/x-raw,format=BGR ! appsink name=sink"
-    )
-    pipeline = Gst.parse_launch(pipeline_str)
-
-    # appsink 설정: 새로운 샘플이 도착할 때마다 on_new_sample 콜백 호출
-    appsink = pipeline.get_by_name("sink")
-    appsink.set_property("emit-signals", True)
-    appsink.set_property("sync", False)
-    appsink.connect("new-sample", on_new_sample)
-
-    # 파이프라인 실행
-    pipeline.set_state(Gst.State.PLAYING)
-
-    # GLib 메인루프를 실행해서 파이프라인 이벤트 및 콜백을 처리
-    loop = GLib.MainLoop()
-    try:
-        loop.run()
-    except Exception as e:
-        print("Error:", e)
-
-    pipeline.set_state(Gst.State.NULL)
+    global template_img, frame_count
+    
+    # 비디오 파일 경로 설정
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    video_file = os.path.join(project_root, "test_video", "sample_720p.mp4")
+    print("Using video file at:", video_file)
+    
+    # OpenCV VideoCapture 생성
+    cap = cv2.VideoCapture(video_file)
+    if not cap.isOpened():
+        print(f"Error: Could not open video file {video_file}")
+        return
+    
+    # 비디오 정보 출력
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f"Video info: {width}x{height}, {fps} FPS, {total_frames} frames")
+    
+    # 창 생성
+    cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Frame", 1280, 720)
+    
+    # 비디오 반복 재생 루프
+    while True:
+        ret, frame = cap.read()
+        
+        # 파일 끝에 도달하면 처음으로 돌아가기
+        if not ret:
+            print("End of video reached, restarting...")
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            continue
+        
+        frame_count += 1
+        if frame_count % 30 == 0:
+            print(f"Processing frame #{frame_count}")
+        
+        # 첫 프레임에서 랜덤 ROI 선택
+        if template_img is None:
+            roi_w = width // 4
+            roi_h = height // 4
+            x = np.random.randint(0, width - roi_w)
+            y = np.random.randint(0, height - roi_h)
+            template_img = frame[y:y+roi_h, x:x+roi_w].copy()
+            print(f"Random ROI selected at: ({x}, {y}, {roi_w}, {roi_h})")
+            
+            # 템플릿 이미지 저장 (디버깅용)
+            cv2.imwrite("selected_template.jpg", template_img)
+            print("Template image saved to 'selected_template.jpg'")
+            
+            # 빨간색으로 선택한 ROI 표시
+            cv2.rectangle(frame, (x, y), (x + roi_w, y + roi_h), (0, 0, 255), 3)
+        else:
+            # 템플릿 매칭 수행
+            res = cv2.matchTemplate(frame, template_img, cv2.TM_CCOEFF_NORMED)
+            _, max_val, _, max_loc = cv2.minMaxLoc(res)
+            
+            if frame_count % 30 == 0:
+                print(f"Match confidence: {max_val:.4f} at location {max_loc}")
+            
+            # 매칭된 위치에 사각형 및 텍스트 표시
+            top_left = max_loc
+            temp_h, temp_w = template_img.shape[:2]
+            bottom_right = (top_left[0] + temp_w, top_left[1] + temp_h)
+            cv2.rectangle(frame, top_left, bottom_right, (0, 0, 255), 3)
+            cv2.putText(frame, f"Match: {max_val:.2f}", 
+                      (top_left[0], top_left[1] - 10),
+                      cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        
+        # 프레임 번호 표시
+        cv2.putText(frame, f"Frame: {frame_count}", 
+                  (width - 150, 30),
+                  cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        
+        # 화면에 표시
+        cv2.imshow("Frame", frame)
+        
+        # 키 입력 대기 (약 30 FPS 속도로 제한)
+        key = cv2.waitKey(33) & 0xFF
+        if key == ord('q'):
+            print("User pressed 'q', quitting...")
+            break
+    
+    # 자원 해제
+    cap.release()
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
