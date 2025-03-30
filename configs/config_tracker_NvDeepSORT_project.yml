@@ -1,0 +1,42 @@
+    %YAML:1.0
+    # ... 라이선스 헤더 ...
+
+    BaseConfig:
+      minDetectorConfidence: 0.0762 # 남겨둠 (필수일 수 있음)
+
+    TargetManagement:
+      # preserveStreamUpdateOrder: 0
+      maxTargetsPerStream: 150 # 남겨둠 (필수일 수 있음)
+      # minIouDiff4NewTarget: 0.9847
+      minTrackerConfidence: 0.4314 # 남겨둠 (필수일 수 있음)
+      # probationAge: 2
+      # maxShadowTrackingAge: 68
+      # earlyTerminationAge: 1
+
+    TrajectoryManagement:
+      useUniqueID: 0 # 남겨둠 (필수일 수 있음)
+
+    # DataAssociator: # 전체 주석 처리 시도
+    #   dataAssociatorType: 0
+    #   associationMatcherType: 1
+    #   checkClassMatch: 1
+    #   thresholdMahalanobis: 12.1875
+    #   minMatchingScore4Overall: 0.1794
+    #   minMatchingScore4SizeSimilarity: 0.3291
+    #   minMatchingScore4Iou: 0.2364
+    #   minMatchingScore4ReidSimilarity: 0.7505 # 어차피 ReID 비활성화됨
+    #   matchingScoreWeight4SizeSimilarity: 0.7178
+    #   matchingScoreWeight4Iou: 0.4551
+    #   matchingScoreWeight4ReidSimilarity: 0.3197 # 어차피 ReID 비활성화됨
+    #   tentativeDetectorConfidence: 0.2479
+    #   minMatchingScore4TentativeIou: 0.2376
+
+    # StateEstimator: # 전체 주석 처리 시도
+    #   stateEstimatorType: 2
+    #   noiseWeightVar4Loc: 0.0503
+    #   noiseWeightVar4Vel: 0.0037
+    #   useAspectRatio: 1
+
+    ReID: # 이미 비활성화됨 (reidType: 0)
+      reidType: 0
+      # ... (나머지 ReID 관련 설정은 주석 처리된 상태 유지) ...
