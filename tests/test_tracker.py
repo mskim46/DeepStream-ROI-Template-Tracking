@@ -7,6 +7,7 @@ gi.require_version('GstApp', '1.0')
 from gi.repository import GObject, Gst, GLib, GstApp
 import cv2
 import numpy as np
+import pyds
 
 # ... (전역 변수 선언 동일) ...
 loop = None
@@ -202,8 +203,41 @@ def on_new_sample(sink: GstApp.AppSink):
     return Gst.FlowReturn.OK
 
 
+def osd_sink_pad_buffer_probe(pad, info, u_data):
+    gst_buffer = info.get_buffer()
+    if not gst_buffer:
+        print("Unable to get GstBuffer ")
+        return
+
+    # Retrieve batch metadata from the gst_buffer
+    batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(gst_buffer))
+    if not batch_meta:
+        return Gst.PadProbeReturn.OK
+
+    l_frame = batch_meta.frame_meta_list
+    while l_frame is not None:
+        try:
+            frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
+        except StopIteration:
+            break
+
+        l_obj = frame_meta.obj_meta_list
+        while l_obj is not None:
+            try:
+                obj_meta = pyds.NvDsObjectMeta.cast(l_obj.data)
+                # 여기서 탐지된 객체 정보를 처리할 수 있습니다
+                print(f"Detected object: {obj_meta.class_id}, confidence: {obj_meta.confidence}")
+            except StopIteration:
+                break
+            l_obj = l_obj.next
+
+        l_frame = l_frame.next
+
+    return Gst.PadProbeReturn.OK
+
+
 def main():
-    global loop, pipeline, appsink, h264parser # h264parser 전역 변수 사용
+    global loop, pipeline, appsink, h264parser
 
     # ... (OpenCV 확인 및 Gst 초기화 동일) ...
     try:
@@ -226,20 +260,24 @@ def main():
         sys.stderr.write(" Pipeline creation failed\n")
         sys.exit(1)
 
-    # 1. 엘리먼트 생성
+    # 1. 엘리먼트 생성 (추론 관련 엘리먼트 추가)
     source = Gst.ElementFactory.make("filesrc", "file-source")
     qtdemux = Gst.ElementFactory.make("qtdemux", "qtdemux0")
-    # h264parser는 전역 변수로 저장하여 콜백에서 사용
     h264parser = Gst.ElementFactory.make("h264parse", "h264-parser")
     decoder = Gst.ElementFactory.make("nvv4l2decoder", "nvv4l2-decoder")
+    
+    # 추론 엘리먼트 추가
+    streammux = Gst.ElementFactory.make("nvstreammux", "stream-muxer")
+    pgie = Gst.ElementFactory.make("nvinfer", "primary-nvinference-engine")
+    
     nvconv1 = Gst.ElementFactory.make("nvvideoconvert", "nvconv1")
+    nvosd = Gst.ElementFactory.make("nvdsosd", "nv-onscreendisplay")
     nvconv2 = Gst.ElementFactory.make("nvvideoconvert", "nvconv2")
     videoconvert = Gst.ElementFactory.make("videoconvert", "convert")
-    # videorate는 일단 제거하고 테스트 (필요시 나중에 추가)
-    # videorate = Gst.ElementFactory.make("videorate", "rate-adjust")
     appsink = Gst.ElementFactory.make("appsink", "mysink")
 
-    if not all([source, qtdemux, h264parser, decoder, nvconv1, nvconv2, videoconvert, appsink]):
+    if not all([source, qtdemux, h264parser, decoder, streammux, pgie, 
+                nvconv1, nvosd, nvconv2, videoconvert, appsink]):
         sys.stderr.write(" Failed to create some elements\n")
         sys.exit(1)
 
@@ -250,59 +288,52 @@ def main():
     appsink.set_property("drop", True)
     appsink.set_property("sync", False) # 속도 조절 안 할 경우 false 유지
 
+    streammux.set_property('width', 1280)
+    streammux.set_property('height', 720)
+    streammux.set_property('batch-size', 1)
+    streammux.set_property('batched-push-timeout', 4000000)
+
+    # nvinfer 설정
+    pgie.set_property('config-file-path', 'configs/config_infer_primary_project.txt')
+
     # 3. 엘리먼트 파이프라인에 추가
     pipeline.add(source)
     pipeline.add(qtdemux)
     pipeline.add(h264parser)
     pipeline.add(decoder)
+    pipeline.add(streammux)
+    pipeline.add(pgie)
     pipeline.add(nvconv1)
+    pipeline.add(nvosd)
     pipeline.add(nvconv2)
     pipeline.add(videoconvert)
-    # pipeline.add(videorate) # 필요시 추가
     pipeline.add(appsink)
 
-    # 4. 정적 엘리먼트 연결 (source -> qtdemux)
+    # 4. 엘리먼트 연결
+    # source -> qtdemux는 동일
     if not source.link(qtdemux):
         sys.stderr.write(" Failed to link source to qtdemux\n")
         sys.exit(1)
 
-    # 5. qtdemux의 pad-added 신호 연결 (동적 연결 처리)
+    # qtdemux -> h264parser (동적 패드 연결)
     qtdemux.connect("pad-added", on_pad_added, h264parser)
 
-    # 6. 나머지 엘리먼트 연결 (h264parser부터 appsink까지)
-    # Caps 필터 추가 (nvvideoconvert 연결 시 필요할 수 있음)
-    caps_nvmm = Gst.Caps.from_string("video/x-raw(memory:NVMM),format=NV12")
-    filter_nvmm = Gst.ElementFactory.make("capsfilter", "filter-nvmm")
-    filter_nvmm.set_property("caps", caps_nvmm)
-    pipeline.add(filter_nvmm)
+    # decoder의 src 패드를 streammux의 sink_0 패드에 연결
+    sinkpad = streammux.get_request_pad("sink_0")
+    if not sinkpad:
+        sys.stderr.write(" Unable to get the sink pad of streammux \n")
+        sys.exit(1)
 
-    caps_bgrx = Gst.Caps.from_string("video/x-raw,format=BGRx")
-    filter_bgrx = Gst.ElementFactory.make("capsfilter", "filter-bgrx")
-    filter_bgrx.set_property("caps", caps_bgrx)
-    pipeline.add(filter_bgrx)
-
-    caps_bgr = Gst.Caps.from_string("video/x-raw,format=BGR")
-    filter_bgr = Gst.ElementFactory.make("capsfilter", "filter-bgr")
-    filter_bgr.set_property("caps", caps_bgr)
-    pipeline.add(filter_bgr)
-
-    # caps_rate = Gst.Caps.from_string("video/x-raw,framerate=3/1") # videorate 사용 시
-    # filter_rate = Gst.ElementFactory.make("capsfilter", "filter-rate")
-    # filter_rate.set_property("caps", caps_rate)
-    # pipeline.add(filter_rate)
-
-    # 연결 순서: h264parser -> decoder -> nvconv1 -> filter_nvmm -> nvconv2 -> filter_bgrx -> videoconvert -> filter_bgr -> appsink
-    if not h264parser.link(decoder): sys.exit("Failed link h264parser -> decoder")
-    if not decoder.link(nvconv1): sys.exit("Failed link decoder -> nvconv1")
-    if not nvconv1.link(filter_nvmm): sys.exit("Failed link nvconv1 -> filter_nvmm")
-    if not filter_nvmm.link(nvconv2): sys.exit("Failed link filter_nvmm -> nvconv2")
-    if not nvconv2.link(filter_bgrx): sys.exit("Failed link nvconv2 -> filter_bgrx")
-    if not filter_bgrx.link(videoconvert): sys.exit("Failed link filter_bgrx -> videoconvert")
-    if not videoconvert.link(filter_bgr): sys.exit("Failed link videoconvert -> filter_bgr")
-    # if not filter_bgr.link(videorate): sys.exit("Failed link filter_bgr -> videorate") # videorate 사용 시
-    # if not videorate.link(filter_rate): sys.exit("Failed link videorate -> filter_rate") # videorate 사용 시
-    # if not filter_rate.link(appsink): sys.exit("Failed link filter_rate -> appsink") # videorate 사용 시
-    if not filter_bgr.link(appsink): sys.exit("Failed link filter_bgr -> appsink") # videorate 미사용 시
+    # 나머지 엘리먼트 연결
+    if not h264parser.link(decoder): sys.exit("Failed to link h264parser -> decoder")
+    srcpad = decoder.get_static_pad("src")
+    if not srcpad.link(sinkpad): sys.exit("Failed to link decoder -> streammux")
+    if not streammux.link(pgie): sys.exit("Failed to link streammux -> pgie")
+    if not pgie.link(nvconv1): sys.exit("Failed to link pgie -> nvconv1")
+    if not nvconv1.link(nvosd): sys.exit("Failed to link nvconv1 -> nvosd")
+    if not nvosd.link(nvconv2): sys.exit("Failed to link nvosd -> nvconv2")
+    if not nvconv2.link(videoconvert): sys.exit("Failed to link nvconv2 -> videoconvert")
+    if not videoconvert.link(appsink): sys.exit("Failed to link videoconvert -> appsink")
 
     # Appsink 콜백 설정
     appsink.connect("new-sample", on_new_sample)
@@ -317,6 +348,12 @@ def main():
     pipeline.set_state(Gst.State.PLAYING)
 
     cv2.namedWindow("ROI Tracking - Press 's' to select ROI, 'q' to quit", cv2.WINDOW_NORMAL)
+
+    # main 함수에서 probe 설정
+    osdsinkpad = nvosd.get_static_pad("sink")
+    if not osdsinkpad:
+        sys.stderr.write(" Unable to get sink pad of nvosd \n")
+    osdsinkpad.add_probe(Gst.PadProbeType.BUFFER, osd_sink_pad_buffer_probe, 0)
 
     try:
         loop.run()
