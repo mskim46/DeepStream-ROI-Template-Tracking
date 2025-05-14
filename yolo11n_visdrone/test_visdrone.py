@@ -121,7 +121,7 @@ def main():
     streammux.set_property("height", 720)
     streammux.set_property("batch-size", 1)
     streammux.set_property("batched-push-timeout", 4000000)
-    pgie.set_property("config-file-path", "/home/godsublab/DeepStream-ROI-Template-Tracking/configs/config_infer_visdrone.txt")
+    pgie.set_property("config-file-path", "/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/config_infer_visdrone.txt")
     
     # Add elements to pipeline
     print("Adding elements to Pipeline")

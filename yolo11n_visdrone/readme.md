@@ -1,0 +1,1 @@
+https://github.com/marcoslucianops/DeepStream-Yolo/blob/master/docs/YOLO11.md

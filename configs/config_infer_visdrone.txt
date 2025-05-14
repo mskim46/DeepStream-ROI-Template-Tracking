@@ -5,8 +5,8 @@
 [property]
 gpu-id=0
 net-scale-factor=0.00392156862745098
-onnx-file=/home/godsublab/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/best.onnx
-model-engine-file=/home/godsublab/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/best.onnx_b1_gpu0_fp16.engine
+onnx-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/best.onnx
+model-engine-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/best.onnx_b1_gpu0_fp16.engine
 batch-size=1
 process-mode=1
 model-color-format=0
@@ -24,10 +24,10 @@ symmetric-padding=1
 infer-dims=3;640;640
 output-tensor-meta=1
 parse-bbox-func-name=NvDsInferParseYolo
-custom-lib-path=/opt/nvidia/deepstream/deepstream/lib/libnvds_infercustomparser_yolo.so
+custom-lib-path=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/libnvdsinfer_custom_impl_Yolo.so
 
 # Class labels from VisDrone
-labelfile-path=/home/godsublab/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/visdrone_labels.txt
+labelfile-path=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/visdrone_labels.txt
 
 # NMS clustering configuration
 [class-attrs-all]
