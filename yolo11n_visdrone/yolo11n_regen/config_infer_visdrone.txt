@@ -4,9 +4,9 @@ net-scale-factor=0.0039215697906911373
 #Home test
 #onnx-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/best.onnx
 #Jetson test
-onnx-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/best.onnx
+onnx-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/best_transposed_fixed.onnx
 #At the first, autogenerate engine file
-#model-engine-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/best.onnx_b1_gpu0_fp16.engine
+#model-engine-file=/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/best_transposed_fixed.onnx_b1_gpu0_fp16.engine
 batch-size=1
 process-mode=1
 model-color-format=1

@@ -197,7 +197,7 @@ def main(args):
     print("DEBUG: streammux properties set.") # DEBUG PRINT
 
     # PGIE 설정
-    pgie_config_path = "/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/config_infer_visdrone.txt"
+    pgie_config_path = "/home/nvidia/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen/config_infer_deep_yolo11.txt"
     pgie.set_property('config-file-path', pgie_config_path)
     print(f"DEBUG: pgie config-file-path set to: {pgie_config_path}") # DEBUG PRINT
 
