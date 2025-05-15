@@ -1,0 +1,107 @@
+nvidia@ubuntu:~/DeepStream-ROI-Template-Tracking/yolo11n_visdrone/yolo11n_regen$ python3 rtsp_test.py rtsp://192.168.2.119
+Creating Pipeline 
+
+Creating Source (rtspsrc)
+
+0:00:00.022397579 39582 0xaaaad2bf9690 DEBUG                rtspsrc gstrtspsrc.c:9451:gst_rtspsrc_uri_set_uri:<rtsp-source> parsing URI
+0:00:00.022444620 39582 0xaaaad2bf9690 DEBUG                rtspsrc gstrtspsrc.c:9458:gst_rtspsrc_uri_set_uri:<rtsp-source> configuring URI
+0:00:00.022462348 39582 0xaaaad2bf9690 DEBUG                rtspsrc gstrtspsrc.c:9474:gst_rtspsrc_uri_set_uri:<rtsp-source> set uri: rtsp://192.168.2.119
+0:00:00.022473484 39582 0xaaaad2bf9690 DEBUG                rtspsrc gstrtspsrc.c:9475:gst_rtspsrc_uri_set_uri:<rtsp-source> request uri is: rtsp://192.168.2.119
+Creating H264 Depayloader (rtph264depay)
+
+0:00:00.023720486 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to 0xffffaa3ef7a0
+0:00:00.023755238 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1843:gst_pad_set_chain_list_function_full:<'':sink> chainlistfunc set to 0xffffaa3ef7b0
+0:00:00.023771559 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to 0xffffaa3eaac0
+Creating H264 Parser (h264parse)
+
+0:00:00.024858141 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to gst_base_parse_sink_event
+0:00:00.024879678 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':sink> queryfunc set to gst_base_parse_sink_query
+0:00:00.024890398 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to gst_base_parse_chain
+0:00:00.024899294 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1736:gst_pad_set_activate_function_full:<'':sink> activatefunc set to gst_base_parse_sink_activate
+0:00:00.024908158 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':sink> activatemodefunc set to gst_base_parse_sink_activate_mode
+0:00:00.024923742 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':src> eventfunc for set to gst_base_parse_src_event
+0:00:00.024931871 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':src> queryfunc set to gst_base_parse_src_query
+Creating Decoder (nvv4l2decoder)
+
+0:00:00.079970119 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to gst_video_decoder_chain
+0:00:00.080009575 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to gst_video_decoder_sink_event
+0:00:00.080039432 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':sink> queryfunc set to gst_video_decoder_sink_query
+0:00:00.080060488 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':src> eventfunc for set to gst_video_decoder_src_event
+0:00:00.080073641 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':src> queryfunc set to gst_video_decoder_src_query
+Creating Stream Muxer (nvstreammux)
+
+0:00:00.083309003 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':src> queryfunc set to gst_nvstreammux_src_query
+0:00:00.083332780 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':src> eventfunc for set to gst_nvstreammux_src_event
+Creating PGIE (nvinfer)
+
+0:00:00.124718588 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to gst_base_transform_sink_event
+0:00:00.124770333 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to gst_base_transform_chain
+0:00:00.124782813 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':sink> activatemodefunc set to gst_base_transform_sink_activate_mode
+0:00:00.124791517 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':sink> queryfunc set to gst_base_transform_query
+0:00:00.124810462 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':src> eventfunc for set to gst_base_transform_src_event
+0:00:00.124821886 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1879:gst_pad_set_getrange_function_full:<'':src> getrangefunc set to gst_base_transform_getrange
+0:00:00.124829854 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':src> activatemodefunc set to gst_base_transform_src_activate_mode
+0:00:00.124839102 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':src> queryfunc set to gst_base_transform_query
+Creating OSD (nvdsosd)
+
+0:00:00.142145313 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to gst_base_transform_sink_event
+0:00:00.142187842 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to gst_base_transform_chain
+0:00:00.142200098 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':sink> activatemodefunc set to gst_base_transform_sink_activate_mode
+0:00:00.142209570 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':sink> queryfunc set to gst_base_transform_query
+0:00:00.142225315 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':src> eventfunc for set to gst_base_transform_src_event
+0:00:00.142234467 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1879:gst_pad_set_getrange_function_full:<'':src> getrangefunc set to gst_base_transform_getrange
+0:00:00.142242819 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':src> activatemodefunc set to gst_base_transform_src_activate_mode
+0:00:00.142251011 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':src> queryfunc set to gst_base_transform_query
+Creating Sink (nveglglessink)
+
+0:00:00.145719050 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1736:gst_pad_set_activate_function_full:<'':sink> activatefunc set to gst_base_sink_pad_activate
+0:00:00.145750411 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1771:gst_pad_set_activatemode_function_full:<'':sink> activatemodefunc set to gst_base_sink_pad_activate_mode
+0:00:00.145759883 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1992:gst_pad_set_query_function_full:<'':sink> queryfunc set to gst_base_sink_sink_query
+0:00:00.145774283 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1912:gst_pad_set_event_function_full:<'':sink> eventfunc for set to gst_base_sink_event
+0:00:00.145782732 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1806:gst_pad_set_chain_function_full:<'':sink> chainfunc set to gst_base_sink_chain
+0:00:00.145791436 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:1843:gst_pad_set_chain_list_function_full:<'':sink> chainlistfunc set to gst_base_sink_chain_list
+Adding elements to Pipeline 
+
+Linking static elements: depay -> parser -> decoder -> streammux -> pgie -> nvosd -> sink 
+
+0:00:00.147174216 39582 0xaaaad2bf9690 INFO                GST_PADS gstutils.c:1079:gst_pad_check_link: trying to link rtp-h264-depay:src and h264-parser:sink
+0:00:00.147201417 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<rtp-h264-depay:src> doing query 0xaaaad2afb8a0 (caps)
+0:00:00.147221225 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:3514:gst_pad_query_default:<rtp-h264-depay:src> not forwarding 0xaaaad2afb8a0 (caps) query
+0:00:00.147232873 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<rtp-h264-depay:src> sent query 0xaaaad2afb8a0 (caps), result 1
+0:00:00.147243881 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<h264-parser:sink> doing query 0xaaaad2afb8f0 (caps)
+0:00:00.147260938 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4300:gst_pad_peer_query:<h264-parser:src> peer query 0xaaaad2afb940 (caps)
+0:00:00.147271146 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:4357:gst_pad_peer_query:<h264-parser:src> pad has no peer
+0:00:00.147296331 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<h264-parser:sink> sent query 0xaaaad2afb8f0 (caps), result 1
+0:00:00.147317867 39582 0xaaaad2bf9690 INFO                GST_PADS gstutils.c:1632:prepare_link_maybe_ghosting: rtp-h264-depay and h264-parser in same bin, no need for ghost pads
+0:00:00.147343404 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:2382:gst_pad_link_prepare: trying to link rtp-h264-depay:src and h264-parser:sink
+0:00:00.147356012 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<rtp-h264-depay:src> doing query 0xaaaad2afc190 (caps)
+0:00:00.147365772 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:3514:gst_pad_query_default:<rtp-h264-depay:src> not forwarding 0xaaaad2afc190 (caps) query
+0:00:00.147374732 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<rtp-h264-depay:src> sent query 0xaaaad2afc190 (caps), result 1
+0:00:00.147383756 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<h264-parser:sink> doing query 0xaaaad2afc1e0 (caps)
+0:00:00.147393101 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4300:gst_pad_peer_query:<h264-parser:src> peer query 0xaaaad2afc230 (caps)
+0:00:00.147400301 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:4357:gst_pad_peer_query:<h264-parser:src> pad has no peer
+0:00:00.147411053 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<h264-parser:sink> sent query 0xaaaad2afc1e0 (caps), result 1
+0:00:00.147424301 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:2590:gst_pad_link_full: linked rtp-h264-depay:src and h264-parser:sink, successful
+0:00:00.147453678 39582 0xaaaad2bf9690 INFO                GST_PADS gstutils.c:1079:gst_pad_check_link: trying to link h264-parser:src and nvv4l2-decoder:sink
+0:00:00.147466094 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<h264-parser:src> doing query 0xaaaad2afba30 (caps)
+0:00:00.147478286 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:3514:gst_pad_query_default:<h264-parser:src> not forwarding 0xaaaad2afba30 (caps) query
+0:00:00.147487214 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<h264-parser:src> sent query 0xaaaad2afba30 (caps), result 1
+0:00:00.147495919 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<nvv4l2-decoder:sink> doing query 0xaaaad2afb9e0 (caps)
+0:00:00.147531727 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4300:gst_pad_peer_query:<nvv4l2-decoder:src> peer query 0xaaaad2afb940 (caps)
+0:00:00.147541232 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:4357:gst_pad_peer_query:<nvv4l2-decoder:src> pad has no peer
+0:00:00.147619281 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<nvv4l2-decoder:sink> sent query 0xaaaad2afb9e0 (caps), result 1
+0:00:00.147637842 39582 0xaaaad2bf9690 INFO                GST_PADS gstutils.c:1632:prepare_link_maybe_ghosting: h264-parser and nvv4l2-decoder in same bin, no need for ghost pads
+0:00:00.147651890 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:2382:gst_pad_link_prepare: trying to link h264-parser:src and nvv4l2-decoder:sink
+0:00:00.147662610 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<h264-parser:src> doing query 0xaaaad2afc190 (caps)
+0:00:00.147673842 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:3514:gst_pad_query_default:<h264-parser:src> not forwarding 0xaaaad2afc190 (caps) query
+0:00:00.147683122 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<h264-parser:src> sent query 0xaaaad2afc190 (caps), result 1
+0:00:00.147691987 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<nvv4l2-decoder:sink> doing query 0xaaaad2afba80 (caps)
+0:00:00.147702227 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4300:gst_pad_peer_query:<nvv4l2-decoder:src> peer query 0xaaaad2afb990 (caps)
+0:00:00.147709427 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:4357:gst_pad_peer_query:<nvv4l2-decoder:src> pad has no peer
+0:00:00.147761204 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<nvv4l2-decoder:sink> sent query 0xaaaad2afba80 (caps), result 1
+0:00:00.147777300 39582 0xaaaad2bf9690 INFO                GST_PADS gstpad.c:2590:gst_pad_link_full: linked h264-parser:src and nvv4l2-decoder:sink, successful
+0:00:00.147799701 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4173:gst_pad_query:<nvv4l2-decoder:src> doing query 0xaaaad2afb630 (caps)
+0:00:00.147813749 39582 0xaaaad2bf9690 DEBUG               GST_PADS gstpad.c:4196:gst_pad_query:<nvv4l2-decoder:src> sent query 0xaaaad2afb630 (caps), result 1
+0:00:00.147844886 39582 0xaaaad2bf9690 ERROR            nvstreammux gstnvstreammux.cpp:1620:gst_nvstreammux_request_new_pad:<stream-muxer> Pad should be named 'sink_%u' when requesting a pad
+ERROR: Could not link decoder -> streammux
+
